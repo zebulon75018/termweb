@@ -1,0 +1,291 @@
+#include "mainwindow.h"
+#include <QVBoxLayout>
+#include <QWidget>
+#ifdef QT5
+#include <QWebView>
+#include <QWebFrame>
+#endif
+#ifdef QT6
+#include <QWebEngineView>
+#endif
+#include <QSplitter>
+#include <QFrame>
+
+#include <QFileInfoList>
+#include <QFileInfo>
+#include <QDir>
+
+#include <QDebug>
+
+#include "templateEngineQt.h"
+#include "qtterminalwidget/terminalwidget.h"
+#include "parametermanager.h"
+
+
+
+MainWindow::MainWindow(QString dir,QWidget *parent)
+    : QMainWindow(parent)
+{
+
+    appdir = dir;
+    // Layout horizontal
+    QVBoxLayout* layout = new QVBoxLayout(this);
+
+    // Terminal Widget
+    TerminalWidget* terminal = new TerminalWidget();
+    terminal->setColorScheme("WhiteOnBlack");
+    terminal->setShellProgram("/bin/bash");
+
+    // Web Widget
+#ifdef QT5
+    wv = new QWebView();
+    wp = new QWebPage();
+    wv->setPage(wp);
+    auto wf = wp->currentFrame();
+    wf->setUrl(QUrl("https://www.qt.io"));
+#endif
+#ifdef QT6
+    wv = new QWebEngineView();
+    wp = new QWebEnginePage();
+    wv->setPage(wp);
+    wp->setUrl(QUrl("https://www.qt.io"));
+#endif
+
+
+    QSplitter *splitter = new QSplitter(this);
+    splitter->addWidget(terminal);
+    splitter->addWidget(wv);
+    splitter->setOrientation(Qt::Vertical);
+    splitter->setStyleSheet( "margin-left: 50px;" );
+    this->setCentralWidget(splitter);
+}
+
+MainWindow::~MainWindow() {}
+
+
+void MainWindow::viewDir(QString dirname) {
+    //qDebug() << " viewDir ";
+       //QFileInfo fi(p->cwd + "/" + p->nameFileToEdit);
+       QFileInfo fi(dirname);
+       if ( fi.isDir()) {
+            QDir dir(dirname);
+            QStringList filter;
+            QVariantMap data;
+            filter <<"*.jpg" << "*.png" << "*.jpeg" << "*.webp";
+            QFileInfoList files = dir.entryInfoList(filter);
+            QStringList listFiles ;
+            for ( auto f : files)
+                 listFiles.append(QUrl::fromLocalFile(f.absoluteFilePath()).toString().replace("é","&eacute;"));
+            data["files"] = listFiles;
+            QString strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/explorer.tpl"), data);
+            saveFile(joinDir(appdir,"/monaco/explorer.html"),strScript);
+            urlActived(QUrl::fromLocalFile(joinDir(appdir,"/monaco/explorer.html")));
+     }
+}
+
+void MainWindow::editimage(parameterManager *p, bool video )
+{
+    QVariantMap data;
+    QString strScript="";
+    //TODO make a join path + file
+    QImage img (p->cwd+"/"+p->nameFileToEdit);
+    data["width"] = img.width();
+    data["height"] = img.height();
+    data["img1"] = QUrl("file:///"+p->cwd+"/"+p->nameFileToEdit.trimmed()).toString();
+    strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/editimg.tpl"), data);
+    saveFile(joinDir(appdir,"/monaco/editimg.html"),strScript);
+    urlActived(QUrl("file:///"+joinDir(appdir,"/monaco/editimg.html")));
+}
+
+void MainWindow::editfile(parameterManager *p)
+{
+    QString strScript="";
+    strScript = readFile(joinDir(appdir,"/monaco/index.tpl"));
+
+    // https://stackoverflow.com/questions/5090969/read-a-text-file-to-qstringlist
+    QFile TextFile(p->nameFileToEdit.trimmed());
+
+    if (!TextFile.open(QIODevice::ReadWrite))
+    {
+        qDebug() << "Unable to create empty file " << p->nameFileToEdit ;
+        return;
+    }
+
+    //Open file for reading
+
+    QStringList SL;
+    while(!TextFile.atEnd()) {
+        SL.append(QString(TextFile.readLine()).remove("\n").replace("'","\\'"));
+    }
+    QString str =  SL.join("',\n'");
+    QVariantMap data;
+    data["items"] = SL;
+    data["language"] = parameterManager::fromExtension(p->nameFileToEdit);
+    strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/index.tpl"), data);
+    saveFile(joinDir(appdir,"/monaco/index.html"),strScript);
+
+    urlActived(QUrl("file:///"+joinDir(appdir,"/monaco/index.html?file="+p->nameFileToEdit)));
+}
+
+
+void MainWindow::difffile(parameterManager *p)
+{
+    QString strScript="";
+    QVariantMap data;
+
+    QString text1 = readFile(p->nameFileToEdit.trimmed()).replace("`","\\`");
+    QString text2 = readFile(p->nameFileToEdit2.trimmed()).replace("`","\\`");
+    data["text1"] = text1;
+    data["text2"] = text2;
+    data["language"] = parameterManager::fromExtension(p->nameFileToEdit);
+    strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/diff.tpl"), data);
+    saveFile(joinDir(appdir,"/monaco/diff.html"),strScript);
+
+    urlActived(QUrl("file:///"+joinDir(appdir,"/monaco/diff.html")));
+}
+
+void MainWindow::diffimage(parameterManager *p, bool video )
+{
+    QVariantMap data;
+    QString strScript="";
+    //TODO make a join path + file
+    data["img1"] = QUrl("file:///"+p->cwd+"/"+p->nameFileToEdit.trimmed()).toString();
+    data["img2"] = QUrl("file:///"+p->cwd+"/"+p->nameFileToEdit2.trimmed()).toString();
+    if ( video ) {
+        strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/diffvideo.tpl"), data);
+        saveFile(joinDir(appdir,"/monaco/diffvideo.html"),strScript);
+        urlActived(QUrl("file:///"+joinDir(appdir,"/monaco/diffvideo.html")));
+    } else {
+        strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/diffimg.tpl"), data);
+        saveFile(joinDir(appdir,"/monaco/diffimg.html"),strScript);
+        urlActived(QUrl("file:///"+joinDir(appdir,"/monaco/diffimg.html")));
+    }
+
+}
+
+
+
+
+//void MainWindow::commandRecieved( parameterManager *p)
+void MainWindow::commandRecieved(QStringList l)
+{
+    parameterManager p = parameterManager(l);
+    QFileInfo fi(p.cwd + "/" + p.nameFileToEdit);
+    switch(p.mode)
+    {
+    case parameterManager::Mode::Man:
+        urlActived(QUrl("https://man7.org/linux/man-pages/man1/" + p.nameParam + ".1.html"));
+    break;
+    case parameterManager::Mode::Edit:
+        if (parameterManager::isImage(p.nameFileToEdit) )  {
+            editimage(&p);
+        } else {
+            editfile(&p);
+        }
+        break;
+    case parameterManager::Mode::View:
+        if ( fi.isDir()) {
+           viewDir(p.cwd);
+        }
+        else {
+            if (parameterManager::isVideo(p.nameFileToEdit) )
+            {
+                QVariantMap data;
+                data["file"] = QUrl::fromLocalFile(fi.absoluteFilePath());
+                QString strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/video.tpl"), data);
+                saveFile(joinDir(appdir,"/monaco/video.html"),strScript);
+                urlActived(QUrl::fromLocalFile(joinDir(appdir,"/monaco/video.html")));
+            }
+            else
+            {
+                urlActived(QUrl::fromLocalFile(fi.absoluteFilePath()));
+            }
+        }
+        break;
+    case parameterManager::Mode::Diff:
+        if (parameterManager::isVideo(p.nameFileToEdit) )  {
+            diffimage(&p, true);
+        } else {
+            if (parameterManager::isImage(p.nameFileToEdit) )  {
+                diffimage(&p);
+            } else {
+                difffile(&p);
+            }
+        }
+        break;
+    case parameterManager::Mode::Js:
+        //qDebug() << p.nameParam;
+        //qDebug() << wv->page()->runJavaScript(p.nameParam);
+        break;
+
+    case parameterManager::Mode::Open:
+        if (p.nameParam.contains("http"))
+        {
+            urlActived(QUrl(p.nameParam));
+        }
+        else
+        {
+            urlActived(QUrl("http://" + p.nameParam));
+        }
+        break;
+    default:
+        qDebug() << " No mode found ";
+    }
+
+   //viewDir("/home/charles/Téléchargements/");
+}
+
+void MainWindow::urlActived(const QUrl &u) {
+    //qDebug() << u;
+    wv->setPage(wp);
+#ifdef QT5
+    wp->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    //connect(wp,   &QWebPage::consoleMessageReceived, this,&MainWindow::consoleMessageReceived);
+
+    auto wf = wp->currentFrame();
+    wf->setUrl(u);
+#endif
+#ifdef QT6
+    wp->setUrl(u);
+#endif
+}
+
+
+QString MainWindow::joinDir(QString dir,QString subdir)
+{
+   return QDir::cleanPath(dir + subdir);
+}
+
+void MainWindow::saveFile(QString filename,QString& content)
+{
+       QFile filew;
+       filew.setFileName(filename);
+       QTextStream datastream(&filew);
+          
+       if(filew.open(QIODevice::WriteOnly)){
+              datastream << content;
+              filew.close();
+        } else {
+                qDebug() << " Can write file ";
+        } 
+}          
+
+QString MainWindow::readFile(QString filename)
+{
+       QString result="";
+       QFile file;
+       file.setFileName(filename);
+       QTextStream data(&file);
+
+       if(file.open(QIODevice::ReadOnly)){
+             result= file.readAll();
+             file.close();
+       } else {
+                qDebug() << " can't read file  " << filename;
+       }
+       return result;
+}
+
+
+          
+
