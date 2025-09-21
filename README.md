@@ -26,8 +26,7 @@ You must clone 3 repository:
 }
 ```
 # ScreenShot 
+![](https://github.com/zebulon75018/termweb/blob/5c45f44a2f9a0fb193cf33079dc1488375660ee8/img/termwebman.png)
 
-![](https://github.com/zebulon75018/termweb/img/termwebman.png)
+![](https://github.com/zebulon75018/termweb/blob/5c45f44a2f9a0fb193cf33079dc1488375660ee8/img/termwebdiffpicture.png))
 
-
-![](https://github.com/zebulon75018/termweb/img/ttermwebdiffpicture.png)
