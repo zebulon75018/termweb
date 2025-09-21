@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Monaco Editor</title>
+<style>
+
+html, body, #container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+</style>
+<script src="https://public.codepenassets.com/js/prefixfree-1.0.7.min.js"></script>
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div id="container"></div>
+<!-- partial -->
+  <script src='/static/monaco-editor/vs/loader.js'></script>
+
+<script>
+
+require.config({ paths: { 'vs': '/static/monaco-editor/vs/' }});
+window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+
+let proxy = URL.createObjectURL(new Blob([`
+	self.MonacoEnvironment = {
+		baseUrl: '/static/monaco-editor/'
+	};
+	importScripts('/static/monaco-editor/vs/base/worker/workerMain.js');
+`], { type: 'text/javascript' }));
+
+require(["vs/editor/editor.main"], function () {
+	let editor = monaco.editor.create(document.getElementById('container'), {
+		value: ['@CONTENT@'].join('\n'),
+		language: 'javascript',
+		theme: 'vs-light' 
+	});
+        editor.addAction({
+	// An unique identifier of the contributed action.
+	id: "my-unique-id",
+
+	// A label of the action that will be presented to the user.
+	label: "Save",
+
+	// An optional array of keybindings for the action.
+	keybindings: [
+		monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+	],
+
+	// A precondition for this action.
+	precondition: null,
+
+	// A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+	keybindingContext: null,
+
+	contextMenuGroupId: "navigation",
+
+	contextMenuOrder: 1.5,
+
+	// Method that will be executed when the action is triggered.
+	// @param editor The editor instance is passed in as a convenience
+	run: function (ed) {
+		alert("i'm running => " + ed.getPosition());
+	    }  
+        });
+	
+	editor.addListener('didType', () => {
+		console.log(editor.getValue());
+	});
+  
+});
+</script>
+
+</body>
+</html>
