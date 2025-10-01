@@ -11,18 +11,24 @@ parameterManager::parameterManager(QStringList params)
     return;
   }
   // Hack with is the cwd from the singleinstance client.
+
+
+  if ( params.length()>1)
+  {
+      if ( params[1].toLower() =="-h" || params[1].toLower() == "--help")
+      {
+          qDebug() << " help ";
+          mode = Mode::Help;
+          return;
+      }
+  }
   cwd = params[0];
   // remove the first element ( program .. )
   params.removeAt(1);
   for (int n = 0; n< params.length();n++) {
      //qDebug() << params[n];
-     if ( params[n].toLower() =="-h" || params[n].toLower() == "--help") 
-      { 
 
-         //qDebug() << " help ";
-         mode = Mode::Help;
-         return;
-       }
+
        if ( params[n] =="open") {
            mode = Mode::Open;
            if (params.length() >n +1)
@@ -70,26 +76,16 @@ parameterManager::parameterManager(QStringList params)
       if ( params[n] =="js") {
           if (params.length() >n +1)
           {
-              nameFileToEdit = params[n+1];
+              nameParam = params[n+1];
               mode = Mode::Js;
           }
       }
-     // Name of tab terminal
-      if ( params[n] =="name") {
+      if ( params[n] =="savehtml") {
           if (params.length() >n +1)
           {
-              nameDock = params[n+1];
-              //qDebug() << " NAME " << nameDock;
-              mode = Mode::Shell;
-              //DockerRegistry.self();
-        }
-      }
-     if ( params[n] =="bookmark") {
-         mode = Mode::Bookmark;
-         if (params.length() >n +1)
-         {
-            nameParam = params [n+1];
-         }
+              nameParam = params[n+1];
+              mode = Mode::Savehtml;
+          }
       }
 
   }
@@ -106,22 +102,20 @@ QString parameterManager::getExtension(const QString& filenameOrExtension)
 
 bool parameterManager::isHelpRequest()
 {
+    qDebug() << " isHelpRequest";
+    qDebug() << ( mode == Mode::Help);
   return mode == Mode::Help;
 }
 
-bool parameterManager::isBookmarkRequest()
-{
-  return mode == Mode::Bookmark;
-}
-
-
 void parameterManager::showHelp()
-{
-    qInfo() <<  " name ";
-    qInfo() <<  " man ";
+{    
+    qInfo() <<  " man [command]";
     qInfo() <<  " edit [file] ";
     qInfo() <<  " view [file] ";
     qInfo() <<  " diff [file1] [file2] ";
+    qInfo() <<  " savehtml [file] ";
+    qInfo() <<  " js 'javascript' ";
+
 }
 
 

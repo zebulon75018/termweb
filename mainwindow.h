@@ -4,8 +4,13 @@
 
 #include <QMainWindow>
 #ifdef QT5
-#include <QWebView>
-#include <QWebFrame>
+#include <QWebEngineView>
+#include <QWebEnginePage>
+
+//#include <QWebElement>
+//#include <QtWebKit>
+//#include <QtWebKitWidgets>
+
 #endif
 #ifdef QT6
 //#include <QWebEngineFrame>
@@ -35,15 +40,16 @@ public:
     void diffimage(parameterManager *p, bool video = false);
 void urlActived(const QUrl &u);
 QString joinDir(QString dir,QString subdir);
-void saveFile(QString filename,QString& content);
+static void saveFile(QString filename,QString& content);
 QString readFile(QString filename);
 
 
 private:
    QString appdir;
 #ifdef QT5
-   QWebView *wv;
-   QWebPage *wp;
+
+   QWebEngineView *wv;
+   QWebEnginePage *wp;
 #endif
 #ifdef QT6
    QWebEngineView *wv;

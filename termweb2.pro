@@ -1,6 +1,7 @@
 DEFINES += QT5
 QT       += core gui widgets 
-QT       += webkitwidgets
+#QT       += webkitwidgets
+QT       += webenginewidgets
 
 include(QSingleInstance/de_skycoder42_qsingleinstance.pri)
 include(qtterminalwidget/qtterminalwidget.pri)
@@ -9,11 +10,11 @@ include(qtterminalwidget/qtterminalwidget.pri)
 #CONFIG += c++11
 
 # Pour QTermWidget
-INCLUDEPATH +=  QSingleInstance
+INCLUDEPATH +=  QSingleInstance /usr/include/x86_64-linux-gnu/qt5/QtWebKit/
 
 
 #greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets
-greaterThan(QT_MAJOR_VERSION, 5): QT += webenginewidgets
+#greaterThan(QT_MAJOR_VERSION, 5): QT += webenginewidgets
 
 CONFIG += g++
 
@@ -33,7 +34,7 @@ HEADERS += \
     parametermanager.h \
     templateEngineQt.h
 
-LIBS +=  -L./qtterminalwidget
+LIBS +=  -L/home/charles/MYSTUFF/BACKUP2/C++/QT/termweb/termweb2/qtterminalwidget
 LIBS +=  -lqtterminalwidget
 
 CONFIG(debug, debug|release) {

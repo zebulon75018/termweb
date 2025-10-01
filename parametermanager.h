@@ -7,21 +7,19 @@ class parameterManager
 {
 public:
   enum class Mode {
-        None,
-        Shell,
+        None,        
         Man,
         Edit,
         View,
         Diff,
-        Open,
-        Bookmark,
+        Open,        
         Js,
+        Savehtml,
         Help
     };
 
     parameterManager(QStringList param);
     bool isHelpRequest(); 
-    bool isBookmarkRequest(); 
     void showHelp();
 
     static QString fromExtension(const QString& filenameOrExtension);
@@ -39,7 +37,6 @@ public:
     QString nameParam; // Name of param for man and bookmark , and javascript
     QString nameFileToEdit;
     QString nameFileToEdit2;
-    QString nameDock;
     QString cwd; // Current  Working Directory
 
 private:

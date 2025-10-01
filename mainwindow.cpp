@@ -1,13 +1,10 @@
 #include "mainwindow.h"
 #include <QVBoxLayout>
 #include <QWidget>
-#ifdef QT5
-#include <QWebView>
-#include <QWebFrame>
-#endif
-#ifdef QT6
 #include <QWebEngineView>
-#endif
+#include <QWebEnginePage>
+#include <QWebEngineProfile>
+#include <QWebEngineSettings>
 #include <QSplitter>
 #include <QFrame>
 
@@ -37,19 +34,13 @@ MainWindow::MainWindow(QString dir,QWidget *parent)
     terminal->setShellProgram("/bin/bash");
 
     // Web Widget
-#ifdef QT5
-    wv = new QWebView();
-    wp = new QWebPage();
-    wv->setPage(wp);
-    auto wf = wp->currentFrame();
-    wf->setUrl(QUrl("https://www.qt.io"));
-#endif
-#ifdef QT6
     wv = new QWebEngineView();
     wp = new QWebEnginePage();
     wv->setPage(wp);
+    //auto wf = wp->currentFrame();
     wp->setUrl(QUrl("https://www.qt.io"));
-#endif
+
+
 
 
     QSplitter *splitter = new QSplitter(this);
@@ -171,6 +162,8 @@ void MainWindow::commandRecieved(QStringList l)
 {
     parameterManager p = parameterManager(l);
     QFileInfo fi(p.cwd + "/" + p.nameFileToEdit);
+    //const QString js ="alert('toto');";
+    const QString js =(const QString) p.nameParam;
     switch(p.mode)
     {
     case parameterManager::Mode::Man:
@@ -193,7 +186,7 @@ void MainWindow::commandRecieved(QStringList l)
                 QVariantMap data;
                 data["file"] = QUrl::fromLocalFile(fi.absoluteFilePath());
                 QString strScript = TemplateEngineQt::renderFile(joinDir(appdir,"/monaco/video.tpl"), data);
-                saveFile(joinDir(appdir,"/monaco/video.html"),strScript);
+                MainWindow::saveFile(joinDir(appdir,"/monaco/video.html"),strScript);
                 urlActived(QUrl::fromLocalFile(joinDir(appdir,"/monaco/video.html")));
             }
             else
@@ -214,8 +207,22 @@ void MainWindow::commandRecieved(QStringList l)
         }
         break;
     case parameterManager::Mode::Js:
-        //qDebug() << p.nameParam;
-        //qDebug() << wv->page()->runJavaScript(p.nameParam);
+        qDebug() << p.nameParam;
+
+
+        //wp->runJavaScript(p.nameParam);
+
+        //wv->page()->runJavaScript(p.nameParam, [](const QVariant &res){
+        wv->page()->runJavaScript(js, [](const QVariant &res){
+            qDebug() << "Nouveau compteur =" << res; // Résultat retourné par le JS
+        });
+
+        break;
+    case parameterManager::Mode::Savehtml:
+        qDebug()<< " save " << p.nameParam;
+        wv->page()->toHtml([p](const QString &content) {
+            MainWindow::saveFile(p.nameParam,(QString &)content);
+        });
         break;
 
     case parameterManager::Mode::Open:
@@ -237,17 +244,12 @@ void MainWindow::commandRecieved(QStringList l)
 
 void MainWindow::urlActived(const QUrl &u) {
     //qDebug() << u;
-    wv->setPage(wp);
-#ifdef QT5
-    wp->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    wv->setPage(wp);    
+    //wp->settings()-> setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     //connect(wp,   &QWebPage::consoleMessageReceived, this,&MainWindow::consoleMessageReceived);
 
-    auto wf = wp->currentFrame();
-    wf->setUrl(u);
-#endif
-#ifdef QT6
+    //auto wf = wp->currentFrame();
     wp->setUrl(u);
-#endif
 }
 
 
