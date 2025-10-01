@@ -25,6 +25,18 @@ You must clone 3 repository:
         performSend(arg);
 }
 ```
+
+# Help 
+```
+ man [command]
+ edit [file] 
+ view [file] 
+ diff [file1] [file2] 
+ savehtml [file] 
+ open [url] 
+ js 'javascript' 
+```
+
 # ScreenShot 
 ![](https://github.com/zebulon75018/termweb/blob/5c45f44a2f9a0fb193cf33079dc1488375660ee8/img/termwebman.png)
 
