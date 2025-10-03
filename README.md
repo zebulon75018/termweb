@@ -46,4 +46,4 @@ You must clone 3 repository:
 
 ![](https://github.com/zebulon75018/termweb/blob/5c45f44a2f9a0fb193cf33079dc1488375660ee8/img/termwebdiffpicture.png)
 
-![[](https://img.youtube.com/vi/dSUieIXiwkc/0.jpg)](https://youtu.be/dSUieIXiwkc)
+[![](https://img.youtube.com/vi/dSUieIXiwkc/0.jpg)](https://youtu.be/dSUieIXiwkc)
