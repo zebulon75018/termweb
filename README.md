@@ -38,7 +38,7 @@ You must clone 3 repository:
 ```
 
 # Widgets Hierarchies
-![](https://github.com/zebulon75018/termweb/blob/5c45f44a2f9a0fb193cf33079dc1488375660ee8/img/hierarchiewidget.png)
+![widgets ]([https://github.com/zebulon75018/termweb/blob/main/img/hierarchiewidget.png])
 
 
 # ScreenShot 
